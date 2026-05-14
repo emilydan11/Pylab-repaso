@@ -1,0 +1,796 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PyLab — Repaso Bootcamp</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;700&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap');
+:root{--bg:#0c0c0c;--surface:#111;--card:#161616;--card2:#1a1a1a;--border:#222;--border2:#2d2d2d;--text:#d4d4d4;--dim:#888;--dim2:#555;--green:#4ec9b0;--yellow:#dcdcaa;--blue:#569cd6;--blue2:#9cdcfe;--purple:#c586c0;--orange:#ce9178;--red:#f44747;--comment:#6a9955;--correct:#23d18b;--wrong:#f44747;}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{background:var(--bg);color:var(--text);font-family:'IBM Plex Sans',sans-serif;min-height:100vh;overflow-x:hidden;}
+body::before{content:'';position:fixed;inset:0;background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,.03) 2px,rgba(0,0,0,.03) 4px);pointer-events:none;z-index:0;}
+::-webkit-scrollbar{width:5px;height:5px;}::-webkit-scrollbar-track{background:var(--bg);}::-webkit-scrollbar-thumb{background:var(--border2);}
+.header{height:48px;display:flex;align-items:center;justify-content:space-between;padding:0 24px;background:var(--surface);border-bottom:1px solid var(--border);position:sticky;top:0;z-index:100;}
+.header-left{display:flex;align-items:center;gap:16px;}
+.logo{font-family:'JetBrains Mono',monospace;font-size:15px;font-weight:700;color:var(--green);letter-spacing:2px;}
+.logo-prompt{color:var(--dim2);}
+.logo-cursor{display:inline-block;width:8px;height:14px;background:var(--green);margin-left:2px;animation:blink 1s step-end infinite;vertical-align:middle;}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:0}}
+.header-tags{display:flex;gap:8px;}
+.htag{font-family:'JetBrains Mono',monospace;font-size:10px;font-weight:500;padding:2px 8px;border-radius:3px;}
+.htag-green{background:rgba(78,201,176,.12);color:var(--green);border:1px solid rgba(78,201,176,.2);}
+.htag-blue{background:rgba(86,156,214,.12);color:var(--blue);border:1px solid rgba(86,156,214,.2);}
+.htag-count{background:rgba(220,220,170,.08);color:var(--yellow);border:1px solid rgba(220,220,170,.15);}
+.nav{display:flex;background:var(--surface);border-bottom:1px solid var(--border);overflow-x:auto;}
+.nav::-webkit-scrollbar{display:none;}
+.nav-tab{display:flex;align-items:center;gap:6px;padding:10px 20px;border:none;border-right:1px solid var(--border);background:transparent;color:var(--dim);cursor:pointer;font-family:'JetBrains Mono',monospace;font-size:12px;transition:all .15s;white-space:nowrap;position:relative;}
+.nav-tab:hover{background:rgba(255,255,255,.03);color:var(--text);}
+.nav-tab.active{background:var(--card);color:var(--text);border-bottom:2px solid var(--green);}
+.nav-tab.add-tab{color:var(--orange);}
+.nav-tab.add-tab.active{border-bottom-color:var(--orange);}
+.tab-dot{width:6px;height:6px;border-radius:50%;background:var(--dim2);}
+.nav-tab.active .tab-dot{background:var(--green);}
+.nav-tab.add-tab.active .tab-dot{background:var(--orange);}
+.main{padding:28px 32px;max-width:960px;margin:0 auto;position:relative;z-index:1;}
+.hidden{display:none!important;}
+.sec-head{margin-bottom:24px;}
+.sec-title{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--comment);margin-bottom:8px;letter-spacing:1px;}
+.sec-title::before{content:'// ';}
+.sec-h2{font-size:22px;font-weight:700;letter-spacing:-.5px;}
+.sec-h2 .g{color:var(--green);} .sec-h2 .b{color:var(--blue2);}
+.terminal-block{background:var(--card);border:1px solid var(--border);border-radius:6px;padding:24px;margin-bottom:24px;font-family:'JetBrains Mono',monospace;}
+.term-line{display:flex;align-items:baseline;gap:10px;margin-bottom:8px;font-size:13px;}
+.tp{color:var(--green);} .tc{color:var(--blue2);}
+.to{color:var(--dim);font-size:12px;padding-left:22px;margin-bottom:4px;}
+.to .v{color:var(--yellow);} .to .k{color:var(--green);}
+.stats-row{display:flex;gap:12px;margin-bottom:24px;flex-wrap:wrap;}
+.stat-box{background:var(--card);border:1px solid var(--border);border-radius:4px;padding:16px 20px;flex:1;min-width:120px;font-family:'JetBrains Mono',monospace;}
+.stat-box-num{font-size:28px;font-weight:700;color:var(--green);line-height:1;margin-bottom:4px;}
+.stat-box-label{font-size:10px;color:var(--dim);letter-spacing:1px;text-transform:uppercase;}
+.modes-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:10px;}
+.mode-card{background:var(--card);border:1px solid var(--border);border-radius:4px;padding:18px;cursor:pointer;transition:all .15s;position:relative;overflow:hidden;}
+.mode-card::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--border2);transition:background .15s;}
+.mode-card:hover{border-color:var(--border2);background:var(--card2);}
+.mode-card:hover::before{background:var(--green);}
+.mc-blue:hover::before{background:var(--blue);} .mc-yellow:hover::before{background:var(--yellow);}
+.mc-purple:hover::before{background:var(--purple);} .mc-orange:hover::before{background:var(--orange);}
+.mode-icon{font-size:22px;margin-bottom:10px;}
+.mode-title{font-size:14px;font-weight:600;color:var(--text);margin-bottom:4px;}
+.mode-desc{font-size:12px;color:var(--dim);line-height:1.5;}
+.mode-meta{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--dim2);margin-top:10px;}
+.filter-row{display:flex;gap:6px;margin-bottom:18px;flex-wrap:wrap;}
+.f-chip{font-family:'JetBrains Mono',monospace;font-size:11px;padding:4px 12px;border-radius:3px;border:1px solid var(--border2);background:transparent;color:var(--dim);cursor:pointer;transition:all .15s;}
+.f-chip:hover{border-color:var(--green);color:var(--green);}
+.f-chip.active{border-color:var(--green);color:var(--green);background:rgba(78,201,176,.08);}
+.fc-status{display:flex;align-items:center;gap:12px;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--dim);margin-bottom:12px;}
+.fc-prog-track{flex:1;height:2px;background:var(--border2);}
+.fc-prog-fill{height:100%;background:var(--green);transition:width .3s;}
+.fc-wrap{perspective:1400px;height:300px;margin-bottom:18px;}
+.flashcard{width:100%;height:100%;position:relative;transform-style:preserve-3d;transition:transform .5s cubic-bezier(.4,0,.2,1);cursor:pointer;}
+.flashcard.flipped{transform:rotateY(180deg);}
+.fc-face{position:absolute;width:100%;height:100%;backface-visibility:hidden;border-radius:4px;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:32px;text-align:center;}
+.fc-front{background:var(--card);border:1px solid var(--border2);border-top:2px solid var(--green);}
+.fc-back{background:var(--card2);border:1px solid var(--border2);border-top:2px solid var(--blue);transform:rotateY(180deg);}
+.fc-type{font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:2px;text-transform:uppercase;margin-bottom:14px;padding:3px 10px;border-radius:2px;}
+.fc-type-q{background:rgba(78,201,176,.1);color:var(--green);border:1px solid rgba(78,201,176,.2);}
+.fc-type-a{background:rgba(86,156,214,.1);color:var(--blue2);border:1px solid rgba(86,156,214,.2);}
+.fc-tag-pill{font-family:'JetBrains Mono',monospace;font-size:10px;background:rgba(220,220,170,.08);color:var(--yellow);border:1px solid rgba(220,220,170,.12);padding:2px 10px;border-radius:2px;margin-bottom:14px;}
+.fc-q-text{font-size:17px;font-weight:600;line-height:1.5;color:var(--text);}
+.fc-hint{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--dim2);margin-top:16px;}
+.fc-a-text{font-family:'JetBrains Mono',monospace;font-size:13px;line-height:1.7;color:var(--text);}
+.fc-code{background:var(--bg);border:1px solid var(--border);border-left:3px solid var(--green);border-radius:3px;padding:10px 14px;font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--blue2);text-align:left;width:100%;white-space:pre;margin-top:12px;overflow-x:auto;line-height:1.6;}
+.fc-btns{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin-bottom:10px;}
+.btn{display:inline-flex;align-items:center;gap:6px;padding:8px 18px;border-radius:3px;border:1px solid var(--border2);cursor:pointer;font-family:'JetBrains Mono',monospace;font-size:12px;transition:all .15s;background:var(--card);color:var(--text);}
+.btn:hover{background:var(--card2);}
+.btn-green{border-color:var(--green);color:var(--green);background:rgba(78,201,176,.06);}
+.btn-green:hover{background:rgba(78,201,176,.12);}
+.btn-orange{border-color:var(--orange);color:var(--orange);background:rgba(206,145,120,.06);}
+.btn-orange:hover{background:rgba(206,145,120,.12);}
+.btn-red-out{border-color:rgba(244,71,71,.3);color:var(--red);background:transparent;}
+.btn-red-out:hover{background:rgba(244,71,71,.08);}
+.btn-sm{padding:5px 12px;font-size:11px;}
+.quiz-hud{display:flex;align-items:center;gap:16px;background:var(--card);border:1px solid var(--border);border-radius:4px;padding:14px 18px;margin-bottom:20px;font-family:'JetBrains Mono',monospace;}
+.qhud-score{font-size:26px;font-weight:700;color:var(--green);line-height:1;}
+.qhud-label{font-size:10px;color:var(--dim);letter-spacing:1px;text-transform:uppercase;margin-top:2px;}
+.qhud-prog{flex:1;}
+.qhud-prog-label{font-size:10px;color:var(--dim);margin-bottom:6px;}
+.qhud-prog-track{height:3px;background:var(--border2);border-radius:1px;}
+.qhud-prog-fill{height:100%;background:var(--green);border-radius:1px;transition:width .4s;}
+.q-card{background:var(--card);border:1px solid var(--border2);border-radius:4px;padding:26px;margin-bottom:18px;border-left:3px solid var(--blue);}
+.q-tag{font-family:'JetBrains Mono',monospace;font-size:10px;background:rgba(86,156,214,.1);color:var(--blue2);border:1px solid rgba(86,156,214,.15);padding:2px 10px;border-radius:2px;display:inline-block;margin-bottom:14px;}
+.q-text{font-size:16px;font-weight:600;margin-bottom:16px;line-height:1.5;}
+.q-code{background:var(--bg);border:1px solid var(--border);border-left:3px solid var(--purple);border-radius:3px;padding:14px 18px;font-family:'JetBrains Mono',monospace;font-size:13px;color:var(--blue2);margin-bottom:18px;white-space:pre;overflow-x:auto;line-height:1.7;}
+.q-opts{display:flex;flex-direction:column;gap:8px;}
+.q-opt{background:rgba(255,255,255,.02);border:1px solid var(--border);border-radius:3px;padding:12px 16px;cursor:pointer;font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--dim);transition:all .15s;text-align:left;}
+.q-opt:hover{border-color:var(--blue);color:var(--blue2);background:rgba(86,156,214,.05);}
+.q-opt.correct{border-color:var(--correct);color:var(--correct);background:rgba(35,209,139,.07);}
+.q-opt.wrong{border-color:var(--wrong);color:var(--wrong);background:rgba(244,71,71,.07);}
+.q-opt.disabled{pointer-events:none;}
+.q-fb{margin-top:14px;padding:12px 16px;border-radius:3px;font-family:'JetBrains Mono',monospace;font-size:12px;line-height:1.6;display:none;}
+.q-fb.show{display:block;}
+.q-fb.ok{background:rgba(35,209,139,.07);border:1px solid rgba(35,209,139,.2);color:var(--correct);}
+.q-fb.fail{background:rgba(244,71,71,.07);border:1px solid rgba(244,71,71,.2);color:var(--wrong);}
+.q-end{text-align:center;padding:48px 32px;background:var(--card);border:1px solid var(--border2);border-radius:4px;}
+.q-end-ascii{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--green);margin-bottom:20px;line-height:1.4;white-space:pre;}
+.q-end-score{font-family:'JetBrains Mono',monospace;font-size:40px;font-weight:700;color:var(--green);margin-bottom:4px;}
+.q-end-pct{font-family:'JetBrains Mono',monospace;font-size:13px;color:var(--dim);margin-bottom:28px;}
+.fib-card{background:var(--card);border:1px solid var(--border2);border-radius:4px;padding:22px;margin-bottom:14px;border-left:3px solid var(--yellow);}
+.fib-num{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--dim2);margin-bottom:6px;letter-spacing:1px;}
+.fib-title{font-size:15px;font-weight:600;margin-bottom:6px;}
+.fib-desc{font-size:13px;color:var(--dim);margin-bottom:16px;line-height:1.6;}
+.fib-code{background:var(--bg);border:1px solid var(--border);border-radius:3px;padding:14px 16px;font-family:'JetBrains Mono',monospace;font-size:13px;color:var(--text);margin-bottom:12px;line-height:2.2;white-space:pre;overflow-x:auto;}
+.fib-input{background:rgba(220,220,170,.06);border:1px solid rgba(220,220,170,.2);border-radius:3px;padding:2px 8px;color:var(--yellow);font-family:'JetBrains Mono',monospace;font-size:13px;width:160px;outline:none;transition:all .15s;}
+.fib-input:focus{border-color:var(--yellow);}
+.fib-hint{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--comment);margin-bottom:14px;}
+.fib-hint::before{content:'// ';}
+.fib-result{font-family:'JetBrains Mono',monospace;font-size:12px;padding:10px 14px;border-radius:3px;margin-top:10px;display:none;}
+.fib-result.show{display:block;}
+.cs-section{margin-bottom:32px;}
+.cs-sec-title{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--comment);margin-bottom:14px;letter-spacing:1px;}
+.cs-sec-title span{color:var(--green);font-size:13px;font-weight:700;}
+.cs-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:10px;}
+.cs-card{background:var(--card);border:1px solid var(--border);border-radius:4px;padding:16px;}
+.cs-card-title{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--yellow);margin-bottom:10px;}
+.cs-code{background:var(--bg);border-radius:2px;padding:10px 12px;font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--blue2);white-space:pre;overflow-x:auto;line-height:1.7;}
+.cs-custom-tag{font-family:'JetBrains Mono',monospace;font-size:9px;background:rgba(206,145,120,.1);color:var(--orange);border:1px solid rgba(206,145,120,.2);padding:1px 7px;border-radius:2px;margin-left:8px;}
+.admin-banner{background:var(--card);border:1px solid var(--border2);border-left:3px solid var(--orange);border-radius:4px;padding:18px 22px;margin-bottom:24px;font-family:'JetBrains Mono',monospace;}
+.admin-banner-cmd{font-size:12px;color:var(--green);margin-bottom:4px;}
+.admin-banner-cmd::before{content:'$ ';}
+.admin-banner-out{font-size:11px;color:var(--dim);}
+.admin-tabs{display:flex;border:1px solid var(--border2);border-radius:4px;overflow:hidden;margin-bottom:22px;width:fit-content;}
+.a-tab{padding:8px 20px;border:none;border-right:1px solid var(--border2);background:var(--card);color:var(--dim);cursor:pointer;font-family:'JetBrains Mono',monospace;font-size:12px;transition:all .15s;}
+.a-tab:last-child{border-right:none;}
+.a-tab:hover{color:var(--text);background:var(--card2);}
+.a-tab.active{background:var(--bg);color:var(--orange);}
+.form-block{background:var(--card);border:1px solid var(--border2);border-radius:4px;padding:22px;margin-bottom:22px;}
+.form-block-title{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--orange);letter-spacing:1px;text-transform:uppercase;margin-bottom:18px;}
+.form-group{margin-bottom:14px;}
+.form-label{display:block;font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--dim);letter-spacing:1px;text-transform:uppercase;margin-bottom:6px;}
+.form-label::before{content:'// ';color:var(--comment);}
+.form-input,.form-textarea{width:100%;background:var(--bg);border:1px solid var(--border2);border-radius:3px;color:var(--text);font-family:'JetBrains Mono',monospace;font-size:13px;padding:9px 13px;outline:none;transition:border-color .15s;}
+.form-input:focus,.form-textarea:focus{border-color:var(--orange);}
+.form-textarea{min-height:85px;resize:vertical;line-height:1.6;}
+.form-2col{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+.opt-rows{display:flex;flex-direction:column;gap:7px;margin-bottom:6px;}
+.opt-row{display:flex;gap:8px;align-items:center;}
+.opt-lbl{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--dim);width:16px;}
+.opt-radio{accent-color:var(--correct);width:14px;height:14px;cursor:pointer;flex-shrink:0;}
+.opt-tip{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--comment);margin-top:3px;}
+.c-list-title{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--dim2);letter-spacing:1px;text-transform:uppercase;padding-top:20px;border-top:1px solid var(--border);margin-bottom:12px;}
+.c-item{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;background:var(--bg);border:1px solid var(--border);border-radius:3px;padding:10px 14px;margin-bottom:6px;}
+.c-item-body{flex:1;font-size:13px;line-height:1.5;}
+.c-item-tag{font-family:'JetBrains Mono',monospace;font-size:9px;background:rgba(206,145,120,.1);color:var(--orange);border:1px solid rgba(206,145,120,.15);padding:1px 7px;border-radius:2px;display:inline-block;margin-bottom:3px;}
+.empty-msg{font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--dim2);padding:16px 0;}
+.empty-msg::before{content:'> ';}
+.toast{position:fixed;bottom:24px;right:24px;background:var(--card);border:1px solid var(--green);color:var(--green);font-family:'JetBrains Mono',monospace;font-size:12px;padding:10px 18px;border-radius:3px;opacity:0;transform:translateY(8px);transition:all .25s;pointer-events:none;z-index:1000;}
+.toast::before{content:'✓ ';}
+.toast.show{opacity:1;transform:translateY(0);}
+</style>
+</head>
+<body>
+<div class="header">
+  <div class="header-left">
+    <div class="logo"><span class="logo-prompt">~/</span>pylab<span class="logo-cursor"></span></div>
+    <div class="header-tags">
+      <span class="htag htag-green">python</span>
+      <span class="htag htag-blue">pandas</span>
+      <span class="htag htag-count" id="badge-count">— fichas</span>
+    </div>
+  </div>
+</div>
+<div class="nav">
+  <button class="nav-tab active" onclick="showSection('home',this)"><span class="tab-dot"></span>index.py</button>
+  <button class="nav-tab" onclick="showSection('flashcards',this)"><span class="tab-dot"></span>flashcards.py</button>
+  <button class="nav-tab" onclick="showSection('quiz',this)"><span class="tab-dot"></span>quiz.py</button>
+  <button class="nav-tab" onclick="showSection('fillblank',this)"><span class="tab-dot"></span>completa.py</button>
+  <button class="nav-tab" onclick="showSection('cheatsheet',this)"><span class="tab-dot"></span>cheatsheet.md</button>
+  <button class="nav-tab add-tab" onclick="showSection('admin',this)"><span class="tab-dot"></span>nuevo_tema.py</button>
+</div>
+<div class="main">
+<div id="section-home">
+  <div class="terminal-block">
+    <div class="term-line"><span class="tp">$</span><span class="tc">python pylab.py --mode study</span></div>
+    <div class="to"><span class="k">✓</span> Variables, tipos, conversiones, manejo de errores</div>
+    <div class="to"><span class="k">✓</span> Strings: índices, slices, métodos, f-strings</div>
+    <div class="to"><span class="k">✓</span> Listas: modificación, ordenamiento, comprehensions, anidadas</div>
+    <div class="to"><span class="k">✓</span> Bucles for/while, enumerate, zip, break, continue</div>
+    <div class="to"><span class="k">✓</span> Condicionales, operadores lógicos, filtrado de tablas</div>
+    <div class="to"><span class="k">✓</span> Diccionarios: propiedades, métodos, comprehensions</div>
+    <div class="to"><span class="k">✓</span> Funciones: args, kwargs, lambda, map, filter, globales/locales</div>
+    <div class="to"><span class="k">✓</span> Manejo de errores try/except, context managers</div>
+    <div class="to"><span class="k">✓</span> Clases, herencia, __init__, super()</div>
+    <div class="to"><span class="k">✓</span> Pandas: DataFrames, CSV/Excel, info(), describe()</div>
+    <div class="to"><span class="k">✓</span> Valores ausentes, duplicados, renombrado, tipos</div>
+    <div class="to"><span class="k">✓</span> Filtrado: query(), where(), isin(), múltiples condiciones</div>
+    <div class="to"><span class="k">✓</span> Tipos de datos: datetime, category, .str, .dt, zonas horarias</div>
+    <div class="to"><span class="k">✓</span> apply(), axis=1, pd.Series, ingeniería de características</div>
+    <div class="to"><span class="k">✓</span> groupby(), agg(), merge(), concat(), pivot_table()</div>
+    <div class="to" id="home-total-line"><span class="v">cargando...</span></div>
+  </div>
+  <div class="stats-row">
+    <div class="stat-box"><div class="stat-box-num" id="s-fichas">—</div><div class="stat-box-label">FICHAS</div></div>
+    <div class="stat-box"><div class="stat-box-num" id="s-quiz">—</div><div class="stat-box-label">PREGUNTAS QUIZ</div></div>
+    <div class="stat-box"><div class="stat-box-num" id="s-temas">—</div><div class="stat-box-label">TEMAS</div></div>
+    <div class="stat-box"><div class="stat-box-num" id="s-custom">—</div><div class="stat-box-label">TUYAS</div></div>
+  </div>
+  <div class="modes-grid">
+    <div class="mode-card" onclick="showSection('flashcards')"><div class="mode-icon">🃏</div><div class="mode-title">Flashcards</div><div class="mode-desc">Pregunta → voltea → respuesta. Filtra por tema.</div><div class="mode-meta" id="mc1">— fichas</div></div>
+    <div class="mode-card mc-blue" onclick="showSection('quiz')"><div class="mode-icon">🧠</div><div class="mode-title">Quiz</div><div class="mode-desc">Opción múltiple con código real y explicación.</div><div class="mode-meta" id="mc2">— preguntas</div></div>
+    <div class="mode-card mc-yellow" onclick="showSection('fillblank')"><div class="mode-icon">✏️</div><div class="mode-title">Completa el código</div><div class="mode-desc">Escribe lo que falta en fragmentos de código.</div><div class="mode-meta">5 ejercicios</div></div>
+    <div class="mode-card mc-purple" onclick="showSection('cheatsheet')"><div class="mode-icon">📋</div><div class="mode-title">Cheat Sheet</div><div class="mode-desc">Referencia rápida de todos los métodos.</div></div>
+    <div class="mode-card mc-orange" onclick="showSection('admin')"><div class="mode-icon">➕</div><div class="mode-title">Agregar tema</div><div class="mode-desc">Matplotlib, NumPy, lo que aprendas después.</div></div>
+  </div>
+</div>
+<div id="section-flashcards" class="hidden">
+  <div class="sec-head"><div class="sec-title">flashcards.py</div><div class="sec-h2">Fichas de <span class="g">repaso</span></div></div>
+  <div class="filter-row" id="fc-filters"></div>
+  <div class="fc-status">
+    <span id="fc-counter" style="font-family:'JetBrains Mono',monospace">1/—</span>
+    <div class="fc-prog-track"><div class="fc-prog-fill" id="fc-fill" style="width:0%"></div></div>
+    <span id="fc-tag-label" style="color:var(--yellow);font-family:'JetBrains Mono',monospace;font-size:11px;"></span>
+  </div>
+  <div class="fc-wrap">
+    <div class="flashcard" id="flashcard" onclick="flipCard()">
+      <div class="fc-face fc-front">
+        <div class="fc-type fc-type-q">pregunta</div>
+        <div class="fc-tag-pill" id="fc-tag"></div>
+        <div class="fc-q-text" id="fc-q"></div>
+        <div class="fc-hint">[ click para ver respuesta ]</div>
+      </div>
+      <div class="fc-face fc-back">
+        <div class="fc-type fc-type-a">respuesta</div>
+        <div id="fc-ans"></div>
+      </div>
+    </div>
+  </div>
+  <div class="fc-btns">
+    <button class="btn" onclick="prevCard()">← prev</button>
+    <button class="btn btn-green" onclick="nextCard()">next →</button>
+    <button class="btn" onclick="shuffleCards()">⟳ shuffle</button>
+  </div>
+</div>
+<div id="section-quiz" class="hidden">
+  <div class="sec-head"><div class="sec-title">quiz.py</div><div class="sec-h2">Quiz de <span class="b">código</span></div></div>
+  <div class="quiz-hud">
+    <div><div class="qhud-score" id="q-score">0</div><div class="qhud-label">correctas</div></div>
+    <div class="qhud-prog">
+      <div class="qhud-prog-label" id="q-progress">pregunta 1/—</div>
+      <div class="qhud-prog-track"><div class="qhud-prog-fill" id="q-pfill" style="width:0%"></div></div>
+    </div>
+    <button class="btn btn-sm" onclick="restartQuiz()">⟳ reset</button>
+  </div>
+  <div id="quiz-live">
+    <div class="q-card">
+      <div class="q-tag" id="q-tag"></div>
+      <div class="q-text" id="q-text"></div>
+      <div class="q-code hidden" id="q-code"></div>
+      <div class="q-opts" id="q-opts"></div>
+      <div class="q-fb" id="q-fb"></div>
+    </div>
+    <button class="btn btn-green hidden" id="btn-nq" onclick="nextQ()">siguiente →</button>
+  </div>
+  <div class="q-end hidden" id="quiz-end">
+    <div class="q-end-ascii" id="qe-ascii"></div>
+    <div class="q-end-score" id="qe-score"></div>
+    <div class="q-end-pct" id="qe-pct"></div>
+    <button class="btn btn-green" onclick="restartQuiz()">⟳ intentar de nuevo</button>
+  </div>
+</div>
+<div id="section-fillblank" class="hidden">
+  <div class="sec-head"><div class="sec-title">completa.py</div><div class="sec-h2">Completa el <span class="g">código</span></div></div>
+  <div id="fib-wrap"></div>
+</div>
+<div id="section-cheatsheet" class="hidden">
+  <div class="sec-head"><div class="sec-title">cheatsheet.md</div><div class="sec-h2">Referencia <span class="b">rápida</span></div></div>
+  <div id="cs-wrap"></div>
+</div>
+<div id="section-admin" class="hidden" style="max-width:740px">
+  <div class="sec-head"><div class="sec-title">nuevo_tema.py</div><div class="sec-h2">Agregar <span class="g">contenido</span></div></div>
+  <div class="admin-banner">
+    <div class="admin-banner-cmd">pylab add --type [ficha|quiz|referencia]</div>
+    <div class="admin-banner-out">Todo lo que agregues se guarda en tu navegador y aparece automáticamente en todos los modos de estudio.</div>
+  </div>
+  <div class="admin-tabs">
+    <button class="a-tab active" onclick="aTab('ficha',this)">ficha</button>
+    <button class="a-tab" onclick="aTab('quiz',this)">quiz</button>
+    <button class="a-tab" onclick="aTab('cheat',this)">referencia</button>
+  </div>
+  <div id="at-ficha">
+    <div class="form-block">
+      <div class="form-block-title">nueva ficha</div>
+      <div class="form-2col">
+        <div class="form-group"><label class="form-label">tema</label><input class="form-input" id="nf-t" placeholder="Matplotlib, NumPy…"></div>
+        <div class="form-group"><label class="form-label">código (opcional)</label><input class="form-input" id="nf-c" placeholder="plt.show()"></div>
+      </div>
+      <div class="form-group"><label class="form-label">pregunta</label><textarea class="form-textarea" id="nf-q" placeholder="¿Qué hace plt.show()?"></textarea></div>
+      <div class="form-group"><label class="form-label">respuesta</label><textarea class="form-textarea" id="nf-a" placeholder="Renderiza y muestra el gráfico."></textarea></div>
+      <button class="btn btn-orange" onclick="saveFC()">+ guardar ficha</button>
+    </div>
+    <div class="c-list-title">tus fichas (<span id="cnt-fc">0</span>)</div>
+    <div id="list-fc"></div>
+  </div>
+  <div id="at-quiz" class="hidden">
+    <div class="form-block">
+      <div class="form-block-title">nueva pregunta de quiz</div>
+      <div class="form-2col">
+        <div class="form-group"><label class="form-label">tema</label><input class="form-input" id="nq-t" placeholder="Matplotlib…"></div>
+        <div class="form-group"><label class="form-label">código (opcional)</label><input class="form-input" id="nq-c" placeholder="plt.plot([1,2,3])"></div>
+      </div>
+      <div class="form-group"><label class="form-label">pregunta</label><textarea class="form-textarea" id="nq-q" placeholder="¿Qué tipo de gráfico crea este código?"></textarea></div>
+      <div class="form-group">
+        <label class="form-label">opciones — marca el círculo de la correcta</label>
+        <div class="opt-rows">
+          <div class="opt-row"><span class="opt-lbl">A</span><input type="radio" name="cor" class="opt-radio" value="0" checked><input class="form-input" id="o0" placeholder="Opción A"></div>
+          <div class="opt-row"><span class="opt-lbl">B</span><input type="radio" name="cor" class="opt-radio" value="1"><input class="form-input" id="o1" placeholder="Opción B"></div>
+          <div class="opt-row"><span class="opt-lbl">C</span><input type="radio" name="cor" class="opt-radio" value="2"><input class="form-input" id="o2" placeholder="Opción C"></div>
+          <div class="opt-row"><span class="opt-lbl">D</span><input type="radio" name="cor" class="opt-radio" value="3"><input class="form-input" id="o3" placeholder="Opción D"></div>
+        </div>
+        <div class="opt-tip">// el radio marcado = respuesta correcta</div>
+      </div>
+      <div class="form-group"><label class="form-label">explicación</label><textarea class="form-textarea" id="nq-e" placeholder="plt.plot() crea un gráfico de líneas por defecto."></textarea></div>
+      <button class="btn btn-orange" onclick="saveQZ()">+ guardar pregunta</button>
+    </div>
+    <div class="c-list-title">tus preguntas (<span id="cnt-qz">0</span>)</div>
+    <div id="list-qz"></div>
+  </div>
+  <div id="at-cheat" class="hidden">
+    <div class="form-block">
+      <div class="form-block-title">nueva referencia</div>
+      <div class="form-2col">
+        <div class="form-group"><label class="form-label">sección</label><input class="form-input" id="nc-s" placeholder="📊 Matplotlib"></div>
+        <div class="form-group"><label class="form-label">título</label><input class="form-input" id="nc-t" placeholder="Gráfico de líneas"></div>
+      </div>
+      <div class="form-group"><label class="form-label">código</label><textarea class="form-textarea" id="nc-c" placeholder="import matplotlib.pyplot as plt&#10;plt.plot(x, y)&#10;plt.show()"></textarea></div>
+      <button class="btn btn-orange" onclick="saveCS()">+ guardar referencia</button>
+    </div>
+    <div class="c-list-title">tus referencias (<span id="cnt-cs">0</span>)</div>
+    <div id="list-cs"></div>
+  </div>
+</div>
+</div>
+<div class="toast" id="toast"></div>
+<script>
+const BASE_FC=[
+{tag:"Variables & Tipos",q:"¿Cuál es la diferencia entre = y == en Python?",a:"= es asignación (guarda un valor). == es comparación (retorna True/False).",code:"x = 5\nx == 5   # → True\nx == 9   # → False"},
+{tag:"Variables & Tipos",q:"¿Qué tipo de dato es True en Python?",a:"Es booleano (bool). Solo existen True y False, siempre con mayúscula.",code:"type(True)   # → <class 'bool'>\nbool(1)      # → True\nbool(0)      # → False"},
+{tag:"Variables & Tipos",q:"¿Cómo conviertes el string '42' al entero 42?",a:"Con int(). Para decimales usa float(). Para convertir a string usa str().",code:"int('42')      # → 42\nfloat('3.14')  # → 3.14\nstr(42)        # → '42'"},
+{tag:"Variables & Tipos",q:"¿Qué hace el operador % (módulo)?",a:"Devuelve el residuo de una división. Muy usado para saber si un número es par o impar.",code:"10 % 3   # → 1\n8 % 2    # → 0 (par)\n7 % 2    # → 1 (impar)"},
+{tag:"Variables & Tipos",q:"¿Qué devuelve len() y sobre qué tipos funciona?",a:"Devuelve el número de elementos. Funciona en strings, listas, tuplas, diccionarios y conjuntos.",code:"len('hola')      # → 4\nlen([1,2,3])    # → 3\nlen({'a':1})    # → 1"},
+{tag:"Variables & Tipos",q:"¿Qué pasa si sumas un int y un string?",a:"Python lanza un TypeError. No hace conversión automática de tipos.",code:"# 5 + '3'  →  TypeError\nstr(5) + '3'   # → '53' ✓\nint('3') + 5   # → 8   ✓"},
+{tag:"Variables & Tipos",q:"¿Cuáles son los tipos de datos básicos en Python?",a:"int (enteros), float (decimales), str (texto), bool (True/False), NoneType (None).",code:"type(42)       # int\ntype(3.14)     # float\ntype('hola')   # str\ntype(True)     # bool\ntype(None)     # NoneType"},
+{tag:"Variables & Tipos",q:"¿Cómo muestras información en pantalla?",a:"Con print(). Acepta múltiples argumentos separados por coma.",code:"print('Hola mundo')\nprint('Valor:', 42)\nprint('a','b','c', sep='-')  # → a-b-c"},
+{tag:"Variables & Tipos",q:"¿Qué es None en Python?",a:"El valor nulo de Python. Representa la ausencia de valor. Tipo NoneType.",code:"x = None\nprint(x is None)    # → True"},
+{tag:"Variables & Tipos",q:"¿Cuál es la diferencia entre // y /?",a:"/ hace división real (retorna float). // es división entera (sin decimales).",code:"10 / 3    # → 3.333...\n10 // 3   # → 3\n10 ** 2   # → 100 (potencia)"},
+{tag:"Variables & Tipos",q:"¿Cómo defines múltiples variables en una línea?",a:"Con asignación múltiple desempaquetando valores.",code:"a, b, c = 1, 2, 3\nx = y = z = 0\nprimo, *resto = [2, 3, 5, 7, 11]"},
+{tag:"Variables & Tipos",q:"¿Cómo manejas errores de conversión de tipo?",a:"Con try/except capturando ValueError.",code:"try:\n    n = int('abc')\nexcept ValueError:\n    print('No es un número válido')"},
+{tag:"Strings",q:"¿Cómo verificas si un string contiene otra palabra?",a:"Con el operador in, que retorna True o False.",code:"'python' in 'me gusta python'  # → True\n'java' in 'me gusta python'    # → False"},
+{tag:"Strings",q:"¿Qué hace el método .split()?",a:"Divide un string en una lista usando un separador.",code:"'a,b,c'.split(',')    # → ['a','b','c']\n'hola mundo'.split()  # → ['hola','mundo']"},
+{tag:"Strings",q:"¿Qué hace .join()?",a:"Une una lista de strings en uno solo usando el string como separador.",code:"', '.join(['Python','Pandas'])\n# → 'Python, Pandas'\n'-'.join(['a','b','c'])  # → 'a-b-c'"},
+{tag:"Strings",q:"¿Cómo conviertes un string a mayúsculas/minúsculas?",a:".upper() todo mayúsculas, .lower() todo minúsculas, .title() primera letra de cada palabra.",code:"'hola'.upper()       # → 'HOLA'\n'HOLA'.lower()       # → 'hola'\n'hola mundo'.title() # → 'Hola Mundo'"},
+{tag:"Strings",q:"¿Cómo reemplazas una palabra en un string?",a:"Con .replace(viejo, nuevo). No modifica el original.",code:"'me gusta Java'.replace('Java','Python')\n# → 'me gusta Python'"},
+{tag:"Strings",q:"¿Qué es un f-string y cómo se usa?",a:"String formateado con f antes de comillas. Inserta variables o expresiones dentro de {}.",code:"nombre = 'Ana'\nedad = 25\nf'Hola {nombre}, tienes {edad} años'\nf'Precio: {precio:.2f}'"},
+{tag:"Strings",q:"¿Cómo accedes al último carácter de un string?",a:"Con índice -1. Los índices negativos cuentan desde el final.",code:"texto = 'Python'\ntexto[-1]   # → 'n'\ntexto[-2]   # → 'o'"},
+{tag:"Strings",q:"¿Qué hace .strip() y sus variantes?",a:".strip() quita espacios al inicio y final. .lstrip() solo izquierda. .rstrip() solo derecha.",code:"'  hola  '.strip()   # → 'hola'\n'  hola  '.lstrip()  # → 'hola  '\n'  hola  '.rstrip()  # → '  hola'"},
+{tag:"Strings",q:"¿Cómo cuentas cuántas veces aparece una letra?",a:"Con el método .count().",code:"'mississippi'.count('s')  # → 4\n'banana'.count('a')       # → 3"},
+{tag:"Strings",q:"¿Cómo verificas si un string empieza o termina con algo?",a:"Con .startswith() y .endswith(). Retornan True o False.",code:"'hello.py'.endswith('.py')    # → True\n'hello.py'.startswith('he')   # → True"},
+{tag:"Strings",q:"¿Qué son los índices en un string?",a:"Posición de cada carácter. Empieza en 0 desde la izquierda, en -1 desde la derecha.",code:"texto = 'Python'\n#        012345\ntexto[0]   # → 'P'\ntexto[2]   # → 't'"},
+{tag:"Strings",q:"¿Cómo haces un slice de un string?",a:"Con [inicio:fin:paso]. El índice fin no está incluido.",code:"texto = 'bootcamp'\ntexto[0:4]    # → 'boot'\ntexto[4:]     # → 'camp'\ntexto[::-1]   # → 'pmactoob' (invertido)"},
+{tag:"Strings",q:"¿Cómo formateas un número con decimales en f-string?",a:"Con la sintaxis {valor:.Nf} donde N es el número de decimales.",code:"precio = 3.14159\nf'Precio: {precio:.2f}'   # → 'Precio: 3.14'\nf'Precio: {precio:.0f}'   # → 'Precio: 3'"},
+{tag:"Strings",q:"¿Cómo encuentras la posición de una subcadena?",a:".find() retorna el índice (o -1 si no existe). .index() lanza ValueError si no existe.",code:"'hola mundo'.find('mundo')   # → 5\n'hola mundo'.find('xyz')     # → -1"},
+{tag:"Listas",q:"¿Cómo accedes al tercer elemento de una lista?",a:"Con índice 2. Python cuenta desde 0.",code:"datos = ['a','b','c','d']\ndatos[0]   # → 'a'\ndatos[2]   # → 'c'\ndatos[-1]  # → 'd'"},
+{tag:"Listas",q:"¿Cómo haces un slice [1:3]?",a:"Toma desde índice 1 hasta 3 sin incluirlo.",code:"lista = [10,20,30,40,50]\nlista[1:3]   # → [20, 30]\nlista[:2]    # → [10, 20]\nlista[2:]    # → [30, 40, 50]\nlista[::2]   # → [10, 30, 50]"},
+{tag:"Listas",q:"¿Cómo agregas un elemento al final de una lista?",a:"Con .append(). Modifica la lista original in-place.",code:"lista = [1,2,3]\nlista.append(4)\n# lista → [1, 2, 3, 4]"},
+{tag:"Listas",q:"¿Cómo insertas un elemento en posición específica?",a:"Con .insert(índice, valor). Desplaza los elementos siguientes.",code:"lista = [1,2,3]\nlista.insert(1, 99)\n# lista → [1, 99, 2, 3]"},
+{tag:"Listas",q:"¿Cómo eliminas un elemento por su valor?",a:"Con .remove(valor). Elimina la primera ocurrencia.",code:"lista = [1,2,3,2]\nlista.remove(2)\n# lista → [1, 3, 2]"},
+{tag:"Listas",q:"¿Cómo ordenas una lista?",a:".sort() modifica la lista original. sorted() crea una nueva lista ordenada.",code:"nums = [3,1,4,1,5]\nnums.sort()               # modifica original\nnueva = sorted([3,1,2])   # → [1, 2, 3]\nnums.sort(reverse=True)   # descendente"},
+{tag:"Listas",q:"¿Cómo verificas si un elemento está en una lista?",a:"Con el operador in.",code:"3 in [1,2,3]      # → True\n5 in [1,2,3]      # → False\n5 not in [1,2,3]  # → True"},
+{tag:"Listas",q:"¿Cuál es la diferencia entre lista y tupla?",a:"Las listas son mutables. Las tuplas son inmutables (no se pueden cambiar después de crearse).",code:"lista = [1,2,3]   # mutable\ntupla = (1,2,3)   # inmutable\nlista[0] = 9  # OK\n# tupla[0] = 9  → TypeError"},
+{tag:"Listas",q:"¿Qué es una list comprehension?",a:"Forma concisa de crear listas. [expresión for var in iterable if condición].",code:"[x**2 for x in range(5)]\n# → [0, 1, 4, 9, 16]\n[x for x in range(10) if x%2==0]\n# → [0, 2, 4, 6, 8]"},
+{tag:"Listas",q:"¿Cómo concatenas dos listas?",a:"Con + o con .extend(). append() añade la lista como un elemento, extend() la aplana.",code:"[1,2] + [3,4]        # → [1,2,3,4]\na = [1,2]\na.extend([3,4])      # a → [1,2,3,4]\na.append([3,4])      # a → [1,2,[3,4]]"},
+{tag:"Listas",q:"¿Cómo inviertes una lista?",a:"Con .reverse() que modifica in-place, o con slicing [::-1] que crea una nueva.",code:"lista = [1,2,3]\nlista.reverse()     # lista → [3,2,1]\n[1,2,3][::-1]       # → [3,2,1] nueva lista"},
+{tag:"Listas",q:"¿Cómo copias una lista sin que los cambios afecten el original?",a:"Con .copy() o con slicing [:]. Una asignación simple (b=a) solo crea un alias.",code:"original = [1,2,3]\ncopia = original.copy()   # ✓ independiente\ncopia2 = original[:]      # ✓ independiente\nalias = original          # ✗ misma lista"},
+{tag:"Listas",q:"¿Qué hace list.pop()?",a:"Elimina y retorna el último elemento. Con índice, elimina ese elemento específico.",code:"lista = [10,20,30]\nlista.pop()      # → 30, lista=[10,20]\nlista.pop(0)     # → 10, lista=[20]"},
+{tag:"Listas",q:"¿Cómo procesas strings para crear listas?",a:"Combinando split() con list comprehensions o map() para transformar cada elemento.",code:"linea = 'Python,Pandas,NumPy'\nlibrerias = linea.split(',')\n# → ['Python', 'Pandas', 'NumPy']\nnums = list(map(int, '1 2 3'.split()))"},
+{tag:"Bucles",q:"¿Cómo iteras índice y valor simultáneamente?",a:"Con enumerate(), que devuelve pares (índice, valor).",code:"frutas = ['pera','uva','kiwi']\nfor i, fruta in enumerate(frutas):\n    print(i, fruta)"},
+{tag:"Bucles",q:"¿Qué hace range()?",a:"Genera secuencia de números. range(stop) / range(start,stop) / range(start,stop,step).",code:"list(range(5))         # → [0,1,2,3,4]\nlist(range(2,8,2))     # → [2,4,6]\nlist(range(10,0,-1))   # → [10,9,...,1]"},
+{tag:"Bucles",q:"¿Para qué sirve break?",a:"Termina el bucle inmediatamente.",code:"for n in range(10):\n    if n == 5:\n        break\n    print(n)  # imprime: 0,1,2,3,4"},
+{tag:"Bucles",q:"¿Para qué sirve continue?",a:"Salta el resto del ciclo actual y pasa a la siguiente iteración.",code:"for n in range(5):\n    if n == 2:\n        continue\n    print(n)  # imprime: 0,1,3,4"},
+{tag:"Bucles",q:"¿Cuándo usas while en vez de for?",a:"Cuando no sabes cuántas iteraciones necesitas.",code:"i = 0\nwhile i < 5:\n    print(i)\n    i += 1  # ¡no olvides actualizar!"},
+{tag:"Bucles",q:"¿Cómo iteras sobre dos listas simultáneamente?",a:"Con zip(), que empareja elementos de ambas listas.",code:"nombres = ['Ana','Luis']\nedades  = [25, 30]\nfor n, e in zip(nombres, edades):\n    print(f'{n}: {e}')"},
+{tag:"Bucles",q:"¿Cómo funciona un bucle sobre listas anidadas?",a:"Con bucles for anidados. El exterior itera la lista principal, el interior cada sublista.",code:"matriz = [[1,2,3],[4,5,6],[7,8,9]]\nfor fila in matriz:\n    for elem in fila:\n        print(elem)"},
+{tag:"Bucles",q:"¿Qué hace el operador de asignación aumentada +=?",a:"x += 1 equivale a x = x + 1. Existen +=, -=, *=, /=, //=, **=, %=.",code:"x = 10\nx += 5   # x = 15\nx -= 3   # x = 12\nx *= 2   # x = 24\nx //= 4  # x = 6"},
+{tag:"Bucles",q:"¿Cómo usas sum(), min(), max() con iterables?",a:"Son funciones incorporadas que evitan escribir bucles manuales.",code:"nums = [3,1,4,1,5,9]\nsum(nums)   # → 23\nmin(nums)   # → 1\nmax(nums)   # → 9\nlen(nums)   # → 6"},
+{tag:"Condicionales",q:"¿Cuál es la diferencia entre and y or?",a:"and retorna True solo si AMBAS son True. or retorna True si AL MENOS UNA es True.",code:"True and False  # → False\nTrue or False   # → True\nnot True        # → False"},
+{tag:"Condicionales",q:"¿Cómo se escribe una condición ternaria en una línea?",a:"valor_si_true if condición else valor_si_false",code:"edad = 20\nestado = 'mayor' if edad >= 18 else 'menor'\n# → 'mayor'"},
+{tag:"Condicionales",q:"¿Para qué sirve elif?",a:"Añade condiciones adicionales entre if y else.",code:"nota = 75\nif nota >= 90:    print('A')\nelif nota >= 70:  print('B')\nelif nota >= 60:  print('C')\nelse:            print('F')"},
+{tag:"Condicionales",q:"¿Cuáles son los operadores de comparación en Python?",a:"== igual, != distinto, > mayor, < menor, >= mayor o igual, <= menor o igual.",code:"5 == 5    # True\n5 != 3    # True\n5 > 3     # True\n5 <= 5    # True"},
+{tag:"Condicionales",q:"¿Cómo filtras una tabla DataFrame con operadores lógicos?",a:"Con & (and) y | (or). Cada condición entre paréntesis.",code:"df[(df['edad']>25) & (df['ciudad']=='Bogotá')]\ndf[(df['precio']<100) | (df['stock']>0)]"},
+{tag:"Condicionales",q:"¿Cómo modificas una lista con condicionales?",a:"Con list comprehension condicional.",code:"nums = [1,2,3,4,5]\n[x*2 if x>3 else x for x in nums]\n# → [1, 2, 3, 8, 10]"},
+{tag:"Diccionarios",q:"¿Qué es un diccionario en Python?",a:"Estructura que almacena pares clave-valor. Las claves son únicas e inmutables.",code:"d = {'nombre':'Ana','edad':25}\nd['nombre']   # → 'Ana'"},
+{tag:"Diccionarios",q:"¿Cómo obtienes claves, valores y pares?",a:".keys() para claves, .values() para valores, .items() para pares.",code:"d = {'a':1,'b':2}\nlist(d.keys())    # → ['a','b']\nlist(d.values())  # → [1,2]\nlist(d.items())   # → [('a',1),('b',2)]"},
+{tag:"Diccionarios",q:"¿Cómo evitas un KeyError?",a:"Con .get(clave, default). Retorna el default si la clave no existe.",code:"d = {'a': 1}\nd['b']            # → KeyError ✗\nd.get('b')        # → None    ✓\nd.get('b', 0)     # → 0       ✓"},
+{tag:"Diccionarios",q:"¿Cómo iteras sobre clave y valor?",a:"Con .items() que devuelve pares que puedes desempaquetar.",code:"precios = {'manzana':1.5,'pera':2.0}\nfor fruta, precio in precios.items():\n    print(f'{fruta}: ${precio}')"},
+{tag:"Diccionarios",q:"¿Cómo agregas y eliminas elementos?",a:"Agrega asignando a nueva clave. Elimina con del o .pop().",code:"d = {'a':1}\nd['b'] = 2        # agrega\ndel d['a']        # elimina\nval = d.pop('b')  # elimina y retorna valor"},
+{tag:"Diccionarios",q:"¿Cómo creas un diccionario con comprensión?",a:"Con dict comprehension: {clave: valor for var in iterable}.",code:"cuadrados = {x: x**2 for x in range(5)}\n# → {0:0, 1:1, 2:4, 3:9, 4:16}"},
+{tag:"Diccionarios",q:"¿Cómo verificas si una clave existe?",a:"Con el operador in, que busca en las claves por defecto.",code:"d = {'a':1,'b':2}\n'a' in d      # → True\n'c' in d      # → False"},
+{tag:"Diccionarios",q:"¿Qué hace el método .update()?",a:"Actualiza el diccionario con otro. Si la clave existe, sobreescribe; si no, la añade.",code:"d1 = {'a':1,'b':2}\nd1.update({'b':99,'c':3})\n# d1 → {'a':1,'b':99,'c':3}"},
+{tag:"Funciones",q:"¿Cómo defines una función con valor por defecto?",a:"Con def, nombre, parámetros. Los valores por defecto van al final con =.",code:"def saludar(nombre, saludo='Hola'):\n    return f'{saludo}, {nombre}!'\n\nsaludar('Ana')              # → 'Hola, Ana!'\nsaludar('Ana','Buenos días')"},
+{tag:"Funciones",q:"¿Qué es una función lambda?",a:"Función anónima de una sola línea. lambda parámetros: expresión.",code:"doble = lambda x: x * 2\ndoble(5)   # → 10\nsumar = lambda a,b: a+b\nsumar(3,4)  # → 7"},
+{tag:"Funciones",q:"¿Qué son *args y **kwargs?",a:"*args acepta N argumentos posicionales como tupla. **kwargs acepta N argumentos clave=valor como diccionario.",code:"def suma(*args):\n    return sum(args)\nsuma(1,2,3)   # → 6\n\ndef info(**kwargs):\n    for k,v in kwargs.items(): print(k,v)"},
+{tag:"Funciones",q:"¿Qué hacen map() y filter()?",a:"map() aplica una función a cada elemento. filter() devuelve solo los que pasen la condición.",code:"list(map(lambda x: x*2, [1,2,3]))\n# → [2, 4, 6]\nlist(filter(lambda x: x>2, [1,2,3]))\n# → [3]"},
+{tag:"Funciones",q:"¿Cuál es la diferencia entre variable global y local?",a:"Local: existe solo dentro de la función. Global: existe fuera. Usa global keyword para modificarla dentro.",code:"x = 10  # global\ndef f():\n    y = 5    # local\n    print(x) # puede leer global\ndef g():\n    global x\n    x = 99   # modifica global"},
+{tag:"Funciones",q:"¿Para qué sirve return?",a:"Termina la función y devuelve un valor. Sin return, la función devuelve None.",code:"def doble(x):\n    return x * 2\n\nprint(doble(5))       # → 10\nprint(type(doble(5))) # → <class 'int'>"},
+{tag:"Funciones",q:"¿Qué es una función de filtro?",a:"Función que recibe un elemento y retorna True/False. Se usa con filter() para filtrar iterables.",code:"def es_par(n):\n    return n % 2 == 0\n\nlist(filter(es_par, [1,2,3,4,5,6]))\n# → [2, 4, 6]"},
+{tag:"Manejo de Errores",q:"¿Qué hace try/except?",a:"try ejecuta código que podría fallar. except captura el error y permite manejarlo sin colapsar el programa.",code:"try:\n    resultado = int('abc')\nexcept ValueError:\n    print('No es un número')\nexcept Exception as e:\n    print(f'Error: {e}')"},
+{tag:"Manejo de Errores",q:"¿Cuáles son los errores más comunes en Python?",a:"TypeError, ValueError, KeyError, IndexError, ZeroDivisionError.",code:"[1,2,3][5]      # IndexError\n{'a':1}['b']    # KeyError\n'a' + 1         # TypeError\nint('abc')      # ValueError\n1/0             # ZeroDivisionError"},
+{tag:"Manejo de Errores",q:"¿Para qué sirve 'with' (context manager)?",a:"Gestiona recursos automáticamente. Garantiza que el recurso se libere aunque ocurra un error.",code:"with open('archivo.txt','r') as f:\n    contenido = f.read()\n# el archivo se cierra solo al salir"},
+{tag:"Manejo de Errores",q:"¿Qué hace el bloque finally?",a:"Se ejecuta SIEMPRE, tanto si hubo error como si no. Útil para limpieza de recursos.",code:"try:\n    n = int('42')\nexcept ValueError:\n    print('Error')\nelse:\n    print(f'Éxito: {n}')  # sin error\nfinally:\n    print('Siempre se ejecuta')"},
+{tag:"Clases & POO",q:"¿Qué es una clase y qué hace __init__?",a:"Una clase es un molde para crear objetos. __init__ es el constructor que se ejecuta al crear un objeto.",code:"class Circulo:\n    def __init__(self, radio):\n        self.radio = radio\n    def area(self):\n        return 3.14 * self.radio**2\nc = Circulo(5)\nprint(c.area())  # → 78.5"},
+{tag:"Clases & POO",q:"¿Qué es self en una clase?",a:"Es la referencia al objeto actual. Permite acceder a sus atributos y métodos dentro de la clase.",code:"class Persona:\n    def __init__(self, nombre):\n        self.nombre = nombre\n    def saludar(self):\n        return f'Hola, soy {self.nombre}'"},
+{tag:"Clases & POO",q:"¿Qué es la herencia en Python?",a:"Permite que una clase hija herede atributos y métodos de una clase padre.",code:"class Animal:\n    def __init__(self, nombre):\n        self.nombre = nombre\n    def hablar(self): return '...'\n\nclass Perro(Animal):\n    def hablar(self): return 'Guau!'"},
+{tag:"Clases & POO",q:"¿Qué hace super()?",a:"Llama al método de la clase padre. Útil para extender comportamiento sin reescribir todo.",code:"class Animal:\n    def __init__(self, nombre):\n        self.nombre = nombre\n\nclass Perro(Animal):\n    def __init__(self, nombre, raza):\n        super().__init__(nombre)\n        self.raza = raza"},
+{tag:"Pandas Básico",q:"¿Cómo importas Pandas y lees un CSV?",a:"import pandas as pd para importar. pd.read_csv() para leer archivos CSV.",code:"import pandas as pd\ndf = pd.read_csv('archivo.csv')\ndf = pd.read_csv('file.csv', sep=';')"},
+{tag:"Pandas Básico",q:"¿Qué hace df.head() y df.tail()?",a:"head() muestra las primeras N filas (default 5). tail() muestra las últimas N.",code:"df.head()    # primeras 5\ndf.head(10)  # primeras 10\ndf.tail(3)   # últimas 3"},
+{tag:"Pandas Básico",q:"¿Qué hace df.info()?",a:"Resumen del DataFrame: filas, columnas, tipos de dato y cuántos valores no nulos hay.",code:"df.info()"},
+{tag:"Pandas Básico",q:"¿Qué devuelve df.describe()?",a:"Estadísticas descriptivas de columnas numéricas: count, mean, std, min, percentiles y max.",code:"df.describe()"},
+{tag:"Pandas Básico",q:"¿Cómo ves las dimensiones de un DataFrame?",a:"Con .shape que retorna tupla (filas, columnas).",code:"df.shape         # → (1000, 11)\ndf.shape[0]      # → 1000 (filas)\ndf.shape[1]      # → 11 (columnas)"},
+{tag:"Pandas Básico",q:"¿Cómo seleccionas una o varias columnas?",a:"Una columna retorna Serie. Varias con lista retorna DataFrame.",code:"df['nombre']          # → Serie\ndf[['c1','c2']]       # → DataFrame"},
+{tag:"Pandas Básico",q:"¿Cuál es la diferencia entre loc e iloc?",a:"loc accede por etiquetas (nombres). iloc accede por posiciones numéricas.",code:"df.loc[0, 'nombre']   # etiqueta\ndf.iloc[0, 1]         # posición\ndf.iloc[0:3, :]       # filas 0-2"},
+{tag:"Pandas Básico",q:"¿Qué hace value_counts()?",a:"Cuenta cuántas veces aparece cada valor único en una Serie.",code:"df['genero'].value_counts()\ndf['pais'].value_counts(normalize=True)  # proporciones"},
+{tag:"Pandas Básico",q:"¿Cómo lees un archivo Excel con Pandas?",a:"Con pd.read_excel(). Puedes especificar la hoja con sheet_name.",code:"df = pd.read_excel('archivo.xlsx')\ndf = pd.read_excel('f.xlsx', sheet_name='Hoja2')"},
+{tag:"Pandas Básico",q:"¿Cómo solucionas problemas comunes al leer CSV?",a:"Especificando separador, encoding, saltando filas o indicando los valores nulos.",code:"pd.read_csv('f.csv', sep=';')\npd.read_csv('f.csv', encoding='latin1')\npd.read_csv('f.csv', skiprows=2)\npd.read_csv('f.csv', na_values=['N/A'])"},
+{tag:"Pandas Básico",q:"¿Cómo obtienes los nombres de columnas?",a:"Con el atributo .columns.",code:"df.columns           # nombres como Index\nlist(df.columns)     # como lista\ndf.dtypes            # tipos por columna"},
+{tag:"Valores Ausentes",q:"¿Para qué sirve dropna()?",a:"Elimina filas (o columnas) con valores NaN.",code:"df.dropna(inplace=True)           # filas\ndf.dropna(axis=1, inplace=True)   # columnas\ndf.dropna(subset=['col'])         # solo en col"},
+{tag:"Valores Ausentes",q:"¿Cómo cuentas valores ausentes por columna?",a:"Con df.isna().sum(), que suma True (NaN) por columna.",code:"df.isna().sum()        # por columna\ndf.isna().sum().sum()  # total\ndf.isna().mean()       # proporción"},
+{tag:"Valores Ausentes",q:"¿Cómo filtras filas que tienen NaN?",a:"Con df[df['col'].isna()] para ver filas con NaN.",code:"df[df['edad'].isna()]     # filas con NaN\ndf[df['edad'].notna()]    # filas sin NaN"},
+{tag:"Valores Ausentes",q:"¿Cómo rellenas valores NaN?",a:"Con fillna(). Puedes usar valor fijo, media, mediana o método forward/backward fill.",code:"df['col'].fillna(0)\ndf['col'].fillna(df['col'].median())\ndf['col'].fillna(method='ffill')  # valor anterior"},
+{tag:"Valores Ausentes",q:"¿Para qué sirve inplace=True?",a:"Aplica el cambio directamente al DataFrame original sin reasignarlo.",code:"df.dropna(inplace=True)\n# equivale a:\ndf = df.dropna()"},
+{tag:"Duplicados",q:"¿Cómo detectas y eliminas duplicados?",a:"Con duplicated() para detectar y drop_duplicates() para eliminar.",code:"df.duplicated().sum()               # cuántos hay\ndf.drop_duplicates(inplace=True)    # eliminar"},
+{tag:"Duplicados",q:"¿Cómo eliminas duplicados basándote en columnas específicas?",a:"Con el parámetro subset de drop_duplicates().",code:"df.drop_duplicates(subset=['email'])\ndf.drop_duplicates(subset=['nombre','apellido'])"},
+{tag:"Duplicados",q:"¿Qué hace el parámetro keep en drop_duplicates()?",a:"'first' conserva la primera (default), 'last' la última, False elimina todas.",code:"df.drop_duplicates(keep='first')\ndf.drop_duplicates(keep='last')\ndf.drop_duplicates(keep=False)"},
+{tag:"Columnas & Renombrado",q:"¿Cómo renombras columnas en un DataFrame?",a:"Con df.rename() pasando un diccionario de nombre_viejo → nombre_nuevo.",code:"df.rename(columns={'viejo':'nuevo'}, inplace=True)"},
+{tag:"Columnas & Renombrado",q:"¿Cómo cambias el tipo de dato de una columna?",a:"Con .astype().",code:"df['edad'] = df['edad'].astype('int')\ndf['cat']  = df['cat'].astype('category')\ndf['txt']  = df['txt'].astype('str')"},
+{tag:"Columnas & Renombrado",q:"¿Cómo reemplazas valores específicos en una columna?",a:"Con .replace() pasando un diccionario.",code:"df['col'].replace({'viejo':'nuevo'}, inplace=True)\ndf['col'].replace([1,2],[10,20], inplace=True)"},
+{tag:"Columnas & Renombrado",q:"¿Cómo eliminas columnas de un DataFrame?",a:"Con df.drop() especificando axis=1 para columnas.",code:"df.drop('col', axis=1, inplace=True)\ndf.drop(['c1','c2'], axis=1, inplace=True)"},
+{tag:"Filtrado",q:"¿Cómo filtras un DataFrame con una condición?",a:"Con indexación lógica: la condición dentro de corchetes.",code:"df[df['edad'] > 30]\ndf[df['pais'] == 'México']"},
+{tag:"Filtrado",q:"¿Qué hace df.query()?",a:"Filtra el DataFrame con una condición como string. Más legible.",code:"df.query('edad > 30')\ndf.query('edad > 25 and pais == \"México\"')\nlimite = 1000\ndf.query('ventas > @limite')"},
+{tag:"Filtrado",q:"¿Cómo filtras con múltiples condiciones?",a:"Con & (and) y | (or). Cada condición entre paréntesis.",code:"df[(df['edad']>25) & (df['pais']=='MX')]\ndf[(df['edad']<18) | (df['edad']>65)]"},
+{tag:"Filtrado",q:"¿Qué hace el método where()?",a:"Mantiene valores donde la condición es True, reemplaza el resto.",code:"df['v'].where(df['v'] > 0)       # NaN donde ≤0\ndf['v'].where(df['v'] > 0, 0)    # 0 donde ≤0"},
+{tag:"Filtrado",q:"¿Cómo filtras con una lista de valores permitidos?",a:"Con .isin().",code:"paises = ['México','Colombia']\ndf[df['pais'].isin(paises)]\ndf[~df['pais'].isin(paises)]  # lo contrario"},
+{tag:"Filtrado",q:"¿Cómo ordenas un DataFrame?",a:"Con sort_values(). Por defecto ascendente.",code:"df.sort_values('ventas')\ndf.sort_values('ventas', ascending=False)\ndf.sort_values(['año','ventas'])"},
+{tag:"Filtrado",q:"¿Cómo usas estructuras externas para filtrar DataFrames?",a:"Con .isin() pasando una lista, conjunto o los valores de otra Serie.",code:"ids_validos = {1001,1002,1003}\ndf[df['id'].isin(ids_validos)]\ndf[df['id'].isin(otra_serie)]"},
+{tag:"Tipos de Datos",q:"¿Cómo conviertes una columna a datetime?",a:"Con pd.to_datetime(). Detecta formato automáticamente.",code:"df['fecha'] = pd.to_datetime(df['fecha'])\npd.to_datetime(df['f'], format='%Y-%m-%d')"},
+{tag:"Tipos de Datos",q:"¿Cómo accedes al año, mes o día de una columna datetime?",a:"Con el accessor .dt seguido del atributo.",code:"df['fecha'].dt.year\ndf['fecha'].dt.month\ndf['fecha'].dt.day\ndf['fecha'].dt.day_name()"},
+{tag:"Tipos de Datos",q:"¿Para qué sirve el tipo category?",a:"Para columnas con valores repetidos. Ahorra memoria y mejora rendimiento.",code:"df['genero'] = df['genero'].astype('category')\n# útil para: 'M'/'F', 'low'/'med'/'high'"},
+{tag:"Tipos de Datos",q:"¿Cómo aplicas métodos de string a una columna?",a:"Con el accessor .str seguido del método.",code:"df['nombre'].str.upper()\ndf['email'].str.split('@').str[0]\ndf['texto'].str.contains('python')\ndf['col'].str.strip()"},
+{tag:"Tipos de Datos",q:"¿Cómo trabajas con zonas horarias en Pandas?",a:"Con .dt.tz_localize() para asignar y .dt.tz_convert() para convertir.",code:"df['fecha'].dt.tz_localize('UTC')\ndf['fecha'].dt.tz_convert('America/Bogota')"},
+{tag:"Tipos de Datos",q:"¿Cómo extraes componentes de fecha en columnas separadas?",a:"Usando el accessor .dt para extraer cada componente.",code:"df['año']  = df['fecha'].dt.year\ndf['mes']  = df['fecha'].dt.month\ndf['dia']  = df['fecha'].dt.day"},
+{tag:"Ingeniería de Características",q:"¿Cómo creas una nueva columna a partir de otras?",a:"Asignando la operación directamente a un nuevo nombre de columna.",code:"df['total'] = df['precio'] * df['cantidad']\ndf['imc']   = df['peso'] / df['altura']**2"},
+{tag:"Ingeniería de Características",q:"¿Qué hace apply() sobre una columna?",a:"Aplica una función a cada elemento de la columna.",code:"def cat(x):\n    return 'alto' if x > 100 else 'bajo'\ndf['cat'] = df['ventas'].apply(cat)"},
+{tag:"Ingeniería de Características",q:"¿Qué hace axis=1 en df.apply()?",a:"Pasa filas enteras a la función. Necesario cuando usa varias columnas.",code:"def cat(row):\n    total = row['na'] + row['eu']\n    return 'hit' if total > 1 else 'low'\ndf['c'] = df.apply(cat, axis=1)"},
+{tag:"Ingeniería de Características",q:"¿Qué hace pd.Series() y para qué lo usamos?",a:"Crea un objeto Serie. Lo usamos para simular filas y probar funciones.",code:"row = pd.Series([66,3.6],\n  index=['critic_score','user_score'])\nprint(mi_funcion(row))"},
+{tag:"Ingeniería de Características",q:"¿Cuándo usar apply() vs operaciones vectorizadas?",a:"Vectorizadas (+,-,*,/) son más rápidas. apply() para lógica condicional compleja.",code:"# vectorizada (rápida):\ndf['total'] = df['a'] + df['b']\n# apply para lógica compleja:\ndf['cat'] = df.apply(mi_funcion, axis=1)"},
+{tag:"Ingeniería de Características",q:"¿Qué es la ingeniería de características?",a:"Proceso de crear nuevas columnas a partir de datos existentes para revelar señales útiles para análisis o ML.",code:"df['año']  = df['fecha'].dt.year\ndf['imc']  = df['peso'] / df['altura']**2\ndf['cat']  = df.apply(categorizar, axis=1)"},
+{tag:"Agrupación",q:"¿Qué hace groupby()?",a:"Agrupa el DataFrame por valores de una columna para aplicar funciones de agregación.",code:"df.groupby('pais')['ventas'].sum()\ndf.groupby('pais')['ventas'].mean()\ndf.groupby(['pais','año'])['v'].sum()"},
+{tag:"Agrupación",q:"¿Qué hace .agg() después de groupby()?",a:"Aplica múltiples funciones de agregación a la vez.",code:"df.groupby('pais')['ventas'].agg(\n    ['sum','mean','count','max']\n)"},
+{tag:"Agrupación",q:"¿Cómo aplicas diferentes funciones a diferentes columnas?",a:"Pasando un diccionario a agg().",code:"df.groupby('pais').agg({\n    'ventas':   'sum',\n    'clientes': 'mean',\n    'pedidos':  'count'\n})"},
+{tag:"Agrupación",q:"¿Qué es una pivot table y cómo se crea?",a:"Tabla dinámica que resume datos agrupando por filas y columnas.",code:"pd.pivot_table(df,\n  values='ventas',\n  index='pais',\n  columns='año',\n  aggfunc='sum',\n  fill_value=0)"},
+{tag:"Merge & Concat",q:"¿Cómo concatenas dos DataFrames?",a:"Con pd.concat(). Por defecto apila filas (axis=0).",code:"pd.concat([df1,df2])            # filas\npd.concat([df1,df2], axis=1)   # columnas\npd.concat([df1,df2], ignore_index=True)"},
+{tag:"Merge & Concat",q:"¿Qué hace pd.merge()?",a:"Une dos DataFrames como un JOIN de SQL.",code:"pd.merge(df1, df2, on='id')\npd.merge(df1, df2, on='id', how='left')\npd.merge(df1, df2, left_on='a', right_on='b')"},
+{tag:"Merge & Concat",q:"¿Qué diferencia hay entre inner, left, right y outer join?",a:"inner: solo coincidencias. left: todas de izquierda. right: todas de derecha. outer: todas de ambos.",code:"pd.merge(df1,df2, how='inner')  # intersección\npd.merge(df1,df2, how='left')   # todas de df1\npd.merge(df1,df2, how='right')  # todas de df2\npd.merge(df1,df2, how='outer')  # unión"},
+];
+
+const BASE_QZ=[
+{tag:"Variables & Tipos",q:"¿Qué imprime?",code:"print(type(42))",options:["<class 'int'>","<class 'float'>","<class 'num'>","42"],correct:0,explanation:"42 es un entero. type() retorna la clase del objeto: <class 'int'>."},
+{tag:"Variables & Tipos",q:"¿Cuál es el resultado?",code:"x = 10\nprint(x % 3)",options:["3","1","0","3.33"],correct:1,explanation:"% es módulo (residuo). 10 ÷ 3 = 3 con residuo 1."},
+{tag:"Variables & Tipos",q:"¿Qué hace este código?",code:"a, b = b, a",options:["Error de sintaxis","Intercambia los valores de a y b","Asigna b a ambos","Crea una lista"],correct:1,explanation:"Python evalúa el lado derecho primero, luego asigna. Es la forma idiomática de intercambiar valores."},
+{tag:"Strings",q:"¿Qué imprime?",code:"texto = 'bootcamp'\nprint(texto[-1])",options:["'b'","'p'","'m'","Error"],correct:2,explanation:"Índice -1 = último carácter. 'bootcamp'[-1] = 'm'."},
+{tag:"Strings",q:"¿Qué hace?",code:"'  hola  '.strip().upper()",options:["'  HOLA  '","'HOLA'","'hola'","Error"],correct:1,explanation:"strip() quita espacios, upper() pone mayúsculas. Se encadenan izquierda a derecha."},
+{tag:"Strings",q:"¿Cuál es el output?",code:"print('a,b,c'.split(',')[1])",options:["'a'","'b'","'c'","['a','b','c']"],correct:1,explanation:"split(',') crea ['a','b','c']. El índice [1] retorna 'b'."},
+{tag:"Strings",q:"¿Qué imprime?",code:"print(len('Python'))",options:["5","6","7","Error"],correct:1,explanation:"'Python' tiene 6 caracteres: P-y-t-h-o-n."},
+{tag:"Listas",q:"¿Qué imprime?",code:"lista = [1,2,3,4,5]\nprint(lista[1:3])",options:["[1,2,3]","[2,3]","[2,3,4]","[1,2]"],correct:1,explanation:"[1:3] toma índices 1 y 2 (sin incluir 3). Valores: 2 y 3."},
+{tag:"Listas",q:"¿Qué imprime?",code:"nums = [5,2,8,1]\nnums.sort()\nprint(nums[0])",options:["5","2","1","8"],correct:2,explanation:".sort() ordena ascendente in-place. El primer elemento queda en 1."},
+{tag:"Listas",q:"¿Qué imprime?",code:"resultado = [x**2 for x in range(4) if x%2==0]\nprint(resultado)",options:["[1,4,9]","[0,4]","[0,2,4]","[4,16]"],correct:1,explanation:"range(4)=[0,1,2,3]. Pares: 0 y 2. Cuadrados: 0²=0, 2²=4 → [0,4]."},
+{tag:"Listas",q:"¿Cuál es el output?",code:"a = [1,2,3]\nb = a\nb.append(4)\nprint(a)",options:["[1,2,3]","[1,2,3,4]","Error","[4]"],correct:1,explanation:"b = a no copia la lista, crea un alias. Ambos apuntan a la misma lista. Usa a.copy() para copiar."},
+{tag:"Bucles",q:"¿Qué imprime?",code:"for n in range(5):\n    if n == 2:\n        continue\n    print(n, end=' ')",options:["0 1 2 3 4","0 1 3 4","1 3 4","0 1"],correct:1,explanation:"continue salta la iteración cuando n==2. Se imprimen 0,1,3,4."},
+{tag:"Bucles",q:"¿Qué imprime?",code:"for i, v in enumerate(['a','b','c']):\n    if i == 1:\n        print(v)",options:["a","b","c","Error"],correct:1,explanation:"enumerate() retorna pares (índice, valor). Cuando i==1, v='b'."},
+{tag:"Condicionales",q:"¿Qué devuelve?",code:"def check(x):\n    if x < 60: return 'low'\n    if x < 80: return 'medium'\n    return 'high'\nprint(check(72))",options:["'low'","'medium'","'high'","None"],correct:1,explanation:"72 >= 60 (skip), 72 < 80 (True) → retorna 'medium'."},
+{tag:"Condicionales",q:"¿Cuál es el output?",code:"x = 5\nresult = 'par' if x%2==0 else 'impar'\nprint(result)",options:["'par'","'impar'","None","Error"],correct:1,explanation:"5 % 2 = 1, no es 0, la condición es False → retorna 'impar'."},
+{tag:"Diccionarios",q:"¿Cuál es el output?",code:"d = {'a':1,'b':2,'c':3}\nprint(d.get('d', 99))",options:["None","Error","0","99"],correct:3,explanation:".get(key, default) retorna el default cuando la clave no existe."},
+{tag:"Diccionarios",q:"¿Qué imprime?",code:"d = {'x':10,'y':20}\nd.update({'y':99,'z':30})\nprint(d['y'])",options:["20","99","Error","None"],correct:1,explanation:".update() sobreescribe 'y' con 99. d['y'] = 99."},
+{tag:"Funciones",q:"¿Qué imprime?",code:"def f(a, b=10):\n    return a + b\nprint(f(5))",options:["5","10","15","Error"],correct:2,explanation:"b tiene valor por defecto 10. f(5) = 5 + 10 = 15."},
+{tag:"Funciones",q:"¿Qué imprime?",code:"doble = lambda x: x * 2\nprint(list(map(doble, [1,2,3])))",options:["[1,2,3]","[2,4,6]","[1,4,9]","Error"],correct:1,explanation:"map() aplica doble a cada elemento. 1→2, 2→4, 3→6."},
+{tag:"Pandas Básico",q:"¿Qué hace este código?",code:"df.dropna(inplace=True)",options:["Elimina columnas con NaN","Elimina filas con NaN y modifica df directamente","Rellena NaN con 0","Cuenta los NaN"],correct:1,explanation:"dropna() elimina filas con NaN. inplace=True modifica df sin reasignar."},
+{tag:"Pandas Básico",q:"¿Qué devuelve df.shape?",code:"# df tiene 500 filas y 8 columnas",options:["[500,8]","(8,500)","(500,8)","500"],correct:2,explanation:".shape retorna tupla (filas, columnas). Siempre filas primero."},
+{tag:"Pandas Básico",q:"¿Cuál es la diferencia entre loc e iloc?",code:"df.loc[0,'nombre'] vs df.iloc[0,1]",options:["Son idénticos","loc usa etiquetas, iloc usa posiciones","loc usa posiciones, iloc usa etiquetas","Solo difieren en velocidad"],correct:1,explanation:"loc = etiquetas/nombres. iloc = posiciones enteras."},
+{tag:"Pandas Básico",q:"¿Cómo seleccionas varias columnas?",code:"df.___(['col1','col2'])",options:["df.('col1','col2')","df[['col1','col2']]","df['col1','col2']","df.select(['col1','col2'])"],correct:1,explanation:"Para varias columnas se usa lista dentro de corchetes: df[['c1','c2']]."},
+{tag:"Filtrado",q:"¿Qué hace df.query()?",code:"df.query('edad > 25 and pais == \"MX\"')",options:["Filtra filas que cumplen la condición","Agrega columna nueva","Ordena el DataFrame","Cuenta filas"],correct:0,explanation:"query() filtra y devuelve solo filas donde la condición es True."},
+{tag:"Filtrado",q:"¿Qué retorna este filtro?",code:"df[(df['a']>5) & (df['b']<10)]",options:["Error de sintaxis","Filas donde a>5 Y b<10","Filas donde a>5 O b<10","Todas las filas"],correct:1,explanation:"& es el and lógico para Pandas. Retorna filas que cumplen AMBAS condiciones."},
+{tag:"Ingeniería de Características",q:"¿Qué necesitas para que apply() pase filas enteras?",code:"df['col'] = df.apply(funcion, ___)",options:["axis=0","axis=1","axis='rows'","row=True"],correct:1,explanation:"axis=1 pasa filas. axis=0 (default) pasa columnas."},
+{tag:"Ingeniería de Características",q:"¿Cuál es la forma correcta de crear una Serie?",code:"# critic_score=76, user_score=8",options:["pd.Series([76,8], index=['critic_score','user_score'])","pd.series([76,8])","pd.Series({'critic_score':76,'user_score':8})","A y C son correctas"],correct:3,explanation:"Puedes usar lista+index O diccionario. Ambas válidas. pd.series (minúscula) no existe."},
+{tag:"Tipos de Datos",q:"¿Qué hace value_counts(normalize=True)?",code:"df['pais'].value_counts(normalize=True)",options:["Cuenta valores únicos","Devuelve proporciones/porcentajes","Normaliza entre 0 y 1","Ordena alfabéticamente"],correct:1,explanation:"normalize=True devuelve proporciones (0.35 = 35%) en vez de conteos absolutos."},
+{tag:"Tipos de Datos",q:"¿Cómo extraes el año de una columna datetime?",code:"df['fecha'] = pd.to_datetime(df['fecha'])",options:["df['fecha'].year","df['fecha'].dt.year","df['fecha'].get_year()","df.year('fecha')"],correct:1,explanation:"Se usa el accessor .dt para acceder a propiedades de datetime en una Serie."},
+{tag:"Agrupación",q:"¿Qué hace groupby()?",code:"df.groupby('pais')['ventas'].sum()",options:["Filtra por país","Suma ventas totales agrupadas por país","Ordena por país","Crea columna nueva"],correct:1,explanation:"groupby('pais') agrupa, .sum() suma las ventas de cada grupo."},
+{tag:"Merge & Concat",q:"¿Qué hace pd.merge() con how='left'?",code:"pd.merge(df1, df2, on='id', how='left')",options:["Solo filas que coinciden en ambos","Todas las filas de df1, NaN donde no hay coincidencia en df2","Todas las filas de df2","Todas las filas de ambos"],correct:1,explanation:"LEFT JOIN: todas las filas de df1. Si no hay coincidencia en df2, aparece NaN."},
+];
+
+const BASE_FIB=[
+  {title:"Filtrar DataFrame",desc:"Filtra filas donde critic_score es mayor a 80.",template:"df_buenos = df[df[___] > 80]",blanks:[{id:"f1",answer:"'critic_score'",ph:"nombre columna"}],hint:"el nombre de columna va entre comillas simples"},
+  {title:"Crear Serie de prueba",desc:"Crea una Serie con critic_score=75 y user_score=7.5.",template:"row = pd.___(___,\n             index=['critic_score','user_score'])",blanks:[{id:"f2",answer:"Series",ph:"método"},{id:"f3",answer:"[75, 7.5]",ph:"valores"}],hint:"pd.Series([valores], index=[nombres])"},
+  {title:"apply() por filas",desc:"Aplica la función 'categorizar' pasando filas enteras.",template:"df['cat'] = df.___(categorizar, ___=1)",blanks:[{id:"f4",answer:"apply",ph:"método"},{id:"f5",answer:"axis",ph:"parámetro"}],hint:"df.apply(funcion, axis=1)"},
+  {title:"Eliminar NaN",desc:"Elimina NaN modificando df directamente.",template:"df.___(___=True)",blanks:[{id:"f6",answer:"dropna",ph:"método"},{id:"f7",answer:"inplace",ph:"parámetro"}],hint:"dropna() con inplace=True"},
+  {title:"Renombrar columna",desc:"Renombra 'yr' a 'year' en el DataFrame original.",template:"df.___(columns={'yr':'___'}, inplace=True)",blanks:[{id:"f8",answer:"rename",ph:"método"},{id:"f9",answer:"year",ph:"nuevo nombre"}],hint:"df.rename(columns={...})"},
+];
+
+const BASE_CS=[
+  {cat:"🐍 Python Core",items:[
+    {title:"slice",code:"lista[1:4]    # índices 1,2,3\nlista[:3]     # desde inicio\nlista[2:]     # hasta el final\nlista[::2]    # cada 2 elementos"},
+    {title:"dict ops",code:"d['k']              # leer\nd['nueva'] = 5      # agregar\ndel d['k']          # eliminar\nd.get('k', 0)       # leer sin KeyError"},
+    {title:"function + lambda",code:"def f(p, default=0):\n    return p + default\n\ndoble = lambda x: x * 2"},
+    {title:"list comprehension",code:"[x**2 for x in range(5)]\n[x for x in lst if x > 0]\n{k:v for k,v in d.items()}"},
+    {title:"f-string",code:"f'Hola {nombre}'\nf'Total: {precio:.2f}'   # 2 decimales"},
+    {title:"try / except",code:"try:\n    resultado = int(texto)\nexcept ValueError:\n    print('no es número')\nfinally:\n    print('siempre se ejecuta')"},
+  ]},
+  {cat:"🐼 Pandas — Exploración",items:[
+    {title:"ver datos",code:"df.head() / df.tail(3)\ndf.sample(5, random_state=42)\ndf.info()\ndf.describe()"},
+    {title:"seleccionar",code:"df['col']              # Serie\ndf[['c1','c2']]       # DataFrame\ndf.loc[0, 'col']      # etiqueta\ndf.iloc[0, 1]         # posición"},
+    {title:"filtrar",code:"df[df['edad'] > 30]\ndf.query('edad > 30')\ndf[df['pais'].isin(['MX','CO'])]\ndf[(df['a']>0) & (df['b']<100)]"},
+    {title:"shape / dtypes",code:"df.shape           # (filas, cols)\ndf.dtypes          # tipo por col\ndf.columns         # nombres cols\ndf['c'].nunique()  # valores únicos"},
+  ]},
+  {cat:"🧹 Pandas — Limpieza",items:[
+    {title:"valores ausentes",code:"df.isna().sum()\ndf.dropna(inplace=True)\ndf['c'].fillna(0, inplace=True)\ndf['c'].fillna(df['c'].median())"},
+    {title:"duplicados / rename",code:"df.duplicated().sum()\ndf.drop_duplicates(inplace=True)\ndf.rename(columns={'v':'n'}, inplace=True)"},
+    {title:"tipos de datos",code:"df['c'].astype('int')\ndf['f'] = pd.to_datetime(df['f'])\ndf['c'].astype('category')\ndf['c'].str.upper()"},
+  ]},
+  {cat:"⚙️ Pandas — apply()",items:[
+    {title:"apply en columna",code:"df['new'] = df['col'].apply(funcion)\n\n# con lambda:\ndf['new'] = df['col'].apply(lambda x: x*2)"},
+    {title:"apply en filas (axis=1)",code:"def cat(row):\n    total = row['a'] + row['b']\n    return 'alto' if total > 10 else 'bajo'\n\ndf['c'] = df.apply(cat, axis=1)"},
+    {title:"probar con Serie",code:"row = pd.Series([66, 3.6],\n  index=['critic_score','user_score'])\nprint(mi_funcion(row))"},
+  ]},
+  {cat:"📊 Pandas — Grupos y combinación",items:[
+    {title:"groupby",code:"df.groupby('col')['v'].sum()\ndf.groupby(['c1','c2']).agg({\n    'v1': 'sum', 'v2': 'mean'\n})"},
+    {title:"merge / concat",code:"pd.merge(df1, df2, on='id')\npd.merge(df1, df2, how='left')\npd.concat([df1, df2])           # filas\npd.concat([df1, df2], axis=1)  # cols"},
+    {title:"pivot_table",code:"pd.pivot_table(df,\n  values='ventas',\n  index='pais',\n  columns='año',\n  aggfunc='sum',\n  fill_value=0)"},
+  ]},
+];
+
+// ═══ STORAGE ═══
+const LS={g:k=>{try{return JSON.parse(localStorage.getItem(k)||'[]');}catch{return [];}},s:(k,v)=>localStorage.setItem(k,JSON.stringify(v))};
+const allFC=()=>[...BASE_FC,...LS.g('cfc')];
+const allQZ=()=>[...BASE_QZ,...LS.g('cqz')];
+const allCS=()=>{
+  const custom=LS.g('ccs'),map={};
+  custom.forEach(i=>{if(!map[i.sec])map[i.sec]=[];map[i.sec].push({title:i.title,code:i.code,custom:true});});
+  return [...BASE_CS,...Object.entries(map).map(([cat,items])=>({cat,items,custom:true}))];
+};
+
+// ═══ UTILS ═══
+const esc=s=>s?s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'):'';
+const shuf=arr=>{const a=[...arr];for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;};
+function toast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2400);}
+
+// ═══ NAV ═══
+function showSection(name,btn){
+  ['home','flashcards','quiz','fillblank','cheatsheet','admin'].forEach(s=>document.getElementById('section-'+s).classList.add('hidden'));
+  document.getElementById('section-'+name).classList.remove('hidden');
+  document.querySelectorAll('.nav-tab').forEach(b=>b.classList.remove('active'));
+  const b=btn||Array.from(document.querySelectorAll('.nav-tab')).find(t=>t.getAttribute('onclick')&&t.getAttribute('onclick').includes("'"+name+"'"));
+  if(b)b.classList.add('active');
+  if(name==='flashcards')initFC();
+  if(name==='quiz')initQZ();
+  if(name==='fillblank')renderFIB();
+  if(name==='cheatsheet')renderCS();
+  if(name==='admin')refreshAdmin();
+  updateStats();
+}
+
+// ═══ STATS ═══
+function updateStats(){
+  const fcs=allFC(),qzs=allQZ();
+  const tags=[...new Set(fcs.map(c=>c.tag))];
+  const custom=LS.g('cfc').length+LS.g('cqz').length+LS.g('ccs').length;
+  document.getElementById('s-fichas').textContent=fcs.length;
+  document.getElementById('s-quiz').textContent=qzs.length;
+  document.getElementById('s-temas').textContent=tags.length;
+  document.getElementById('s-custom').textContent=custom;
+  document.getElementById('mc1').textContent=fcs.length+' fichas';
+  document.getElementById('mc2').textContent=qzs.length+' preguntas';
+  document.getElementById('badge-count').textContent=fcs.length+' fichas';
+  document.getElementById('home-total-line').innerHTML=`<span class="v">Total: ${fcs.length} fichas · ${qzs.length} preguntas · ${tags.length} temas · ${custom} tuyas</span>`;
+}
+
+// ═══ FLASHCARDS ═══
+let fcCards=[],fcIdx=0,fcFlipped=false,fcActiveTag='all';
+function initFC(){buildFCFilters();applyFCFilter(fcActiveTag);}
+function buildFCFilters(){
+  const tags=[...new Set(allFC().map(c=>c.tag).filter(Boolean))];
+  const bar=document.getElementById('fc-filters');
+  bar.innerHTML=`<button class="f-chip ${fcActiveTag==='all'?'active':''}" onclick="applyFCFilter('all',this)">all</button>`;
+  tags.forEach(t=>{bar.innerHTML+=`<button class="f-chip ${fcActiveTag===t?'active':''}" onclick="applyFCFilter('${t.replace(/'/g,"\\'")}',this)">${esc(t)}</button>`;});
+}
+function applyFCFilter(tag,btn){
+  fcActiveTag=tag;
+  document.querySelectorAll('.f-chip').forEach(b=>b.classList.remove('active'));
+  if(btn)btn.classList.add('active');
+  const pool=tag==='all'?allFC():allFC().filter(c=>c.tag===tag);
+  fcCards=shuf(pool);fcIdx=0;renderFC();
+}
+function renderFC(){
+  if(!fcCards.length)return;
+  const c=fcCards[fcIdx];
+  document.getElementById('fc-tag').textContent=c.tag||'';
+  document.getElementById('fc-tag-label').textContent=c.tag||'';
+  document.getElementById('fc-q').textContent=c.q;
+  let html=`<div class="fc-a-text">${esc(c.a)}</div>`;
+  if(c.code)html+=`<div class="fc-code">${esc(c.code)}</div>`;
+  document.getElementById('fc-ans').innerHTML=html;
+  const pct=Math.round(((fcIdx+1)/fcCards.length)*100);
+  document.getElementById('fc-counter').textContent=`${fcIdx+1}/${fcCards.length}`;
+  document.getElementById('fc-fill').style.width=pct+'%';
+  document.getElementById('flashcard').classList.remove('flipped');
+  fcFlipped=false;
+}
+function flipCard(){fcFlipped=!fcFlipped;document.getElementById('flashcard').classList.toggle('flipped',fcFlipped);}
+function nextCard(){fcIdx=(fcIdx+1)%fcCards.length;renderFC();}
+function prevCard(){fcIdx=(fcIdx-1+fcCards.length)%fcCards.length;renderFC();}
+function shuffleCards(){fcCards=shuf(fcCards);fcIdx=0;renderFC();}
+
+// ═══ QUIZ ═══
+let qzList=[],qzIdx=0,qzScore=0,qzDone=false;
+function initQZ(){
+  qzList=shuf(allQZ());qzIdx=0;qzScore=0;qzDone=false;
+  document.getElementById('quiz-end').classList.add('hidden');
+  document.getElementById('quiz-live').classList.remove('hidden');
+  document.getElementById('btn-nq').classList.add('hidden');
+  document.getElementById('q-score').textContent='0';
+  renderQ();
+}
+function renderQ(){
+  if(qzIdx>=qzList.length){endQZ();return;}
+  const q=qzList[qzIdx];
+  document.getElementById('q-tag').textContent=q.tag||'';
+  document.getElementById('q-text').textContent=q.q;
+  const ce=document.getElementById('q-code');
+  if(q.code){ce.textContent=q.code;ce.classList.remove('hidden');}else ce.classList.add('hidden');
+  const oe=document.getElementById('q-opts');oe.innerHTML='';
+  q.options.forEach((opt,i)=>{
+    const b=document.createElement('button');b.className='q-opt';
+    b.textContent=`${['A','B','C','D'][i]}. ${opt}`;
+    b.onclick=()=>answerQ(i,q.correct,q.explanation);oe.appendChild(b);
+  });
+  document.getElementById('q-fb').className='q-fb';
+  document.getElementById('btn-nq').classList.add('hidden');
+  const tot=qzList.length;
+  document.getElementById('q-progress').textContent=`pregunta ${qzIdx+1}/${tot}`;
+  document.getElementById('q-pfill').style.width=Math.round((qzIdx/tot)*100)+'%';
+  qzDone=false;
+}
+function answerQ(chosen,correct,explanation){
+  if(qzDone)return;qzDone=true;
+  const opts=document.querySelectorAll('.q-opt');
+  opts.forEach(o=>o.classList.add('disabled'));
+  opts[correct].classList.add('correct');
+  const fb=document.getElementById('q-fb');
+  if(chosen===correct){qzScore++;opts[chosen].classList.add('correct');fb.className='q-fb ok show';fb.textContent='// ✓ correcto — '+explanation;}
+  else{opts[chosen].classList.add('wrong');fb.className='q-fb fail show';fb.textContent='// ✗ incorrecto — '+explanation;}
+  document.getElementById('q-score').textContent=qzScore;
+  document.getElementById('btn-nq').classList.remove('hidden');
+}
+function nextQ(){qzIdx++;renderQ();}
+function endQZ(){
+  document.getElementById('quiz-live').classList.add('hidden');
+  document.getElementById('btn-nq').classList.add('hidden');
+  document.getElementById('quiz-end').classList.remove('hidden');
+  const pct=Math.round((qzScore/qzList.length)*100);
+  document.getElementById('qe-ascii').textContent=pct>=80?" ██████╗ K\n██╔═══██╗ !\n██║   ██║\n╚██████╔╝\n ╚═════╝":" ██████╗\n██╔══██╗\n██████╔╝\n██╔══██╗\n██║  ██║\n╚═╝  ╚═╝";
+  document.getElementById('qe-score').textContent=`${qzScore}/${qzList.length}`;
+  document.getElementById('qe-pct').textContent=`${pct}% correcto`;
+}
+function restartQuiz(){initQZ();}
+
+// ═══ FILL IN BLANK ═══
+function renderFIB(){
+  const w=document.getElementById('fib-wrap');w.innerHTML='';
+  BASE_FIB.forEach((ch,ci)=>{
+    const d=document.createElement('div');d.className='fib-card';
+    let code=ch.template;
+    ch.blanks.forEach(b=>{code=code.replace('___',`<input class="fib-input" id="${b.id}" placeholder="${b.ph}" autocomplete="off" spellcheck="false">`);});
+    d.innerHTML=`<div class="fib-num">// ejercicio ${ci+1}</div>
+      <div class="fib-title">${ch.title}</div>
+      <div class="fib-desc">${ch.desc}</div>
+      <div class="fib-code">${code}</div>
+      <div class="fib-hint">${ch.hint}</div>
+      <div style="display:flex;gap:8px;">
+        <button class="btn btn-green btn-sm" onclick="checkFIB(${ci})">run ▶</button>
+        <button class="btn btn-sm" onclick="resetFIB(${ci})">reset</button>
+      </div>
+      <div class="fib-result" id="fr-${ci}"></div>`;
+    w.appendChild(d);
+  });
+}
+function checkFIB(ci){
+  const ch=BASE_FIB[ci];let ok=true;
+  ch.blanks.forEach(b=>{
+    const inp=document.getElementById(b.id);
+    if(inp.value.trim()===b.answer.trim()){inp.style.borderColor='var(--correct)';inp.style.color='var(--correct)';}
+    else{inp.style.borderColor='var(--wrong)';inp.style.color='var(--wrong)';ok=false;}
+  });
+  const r=document.getElementById('fr-'+ci);r.classList.add('show');
+  if(ok){r.style.cssText='background:rgba(35,209,139,.07);border:1px solid rgba(35,209,139,.2);color:var(--correct)';r.textContent='// ✓ output: correcto';}
+  else{r.style.cssText='background:rgba(244,71,71,.07);border:1px solid rgba(244,71,71,.2);color:var(--wrong)';r.textContent='// ✗ error — '+ch.blanks.map(b=>`${b.ph}: ${b.answer}`).join(' | ');}
+}
+function resetFIB(ci){
+  BASE_FIB[ci].blanks.forEach(b=>{const i=document.getElementById(b.id);i.value='';i.style.borderColor='';i.style.color='';});
+  document.getElementById('fr-'+ci).classList.remove('show');
+}
+
+// ═══ CHEAT SHEET ═══
+function renderCS(){
+  const w=document.getElementById('cs-wrap');w.innerHTML='';
+  allCS().forEach(sec=>{
+    const d=document.createElement('div');d.className='cs-section';
+    let html=`<div class="cs-sec-title">// <span>${esc(sec.cat)}</span>${sec.custom?'<span class="cs-custom-tag">tuya</span>':''}</div><div class="cs-grid">`;
+    sec.items.forEach(it=>{html+=`<div class="cs-card"><div class="cs-card-title">${esc(it.title)}${it.custom?'<span class="cs-custom-tag">+</span>':''}</div><div class="cs-code">${esc(it.code)}</div></div>`;});
+    html+='</div>';d.innerHTML=html;w.appendChild(d);
+  });
+}
+
+// ═══ ADMIN ═══
+function aTab(tab,btn){
+  ['ficha','quiz','cheat'].forEach(t=>document.getElementById('at-'+t).classList.add('hidden'));
+  document.getElementById('at-'+tab).classList.remove('hidden');
+  document.querySelectorAll('.a-tab').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+}
+function saveFC(){
+  const t=document.getElementById('nf-t').value.trim(),q=document.getElementById('nf-q').value.trim(),
+        a=document.getElementById('nf-a').value.trim(),c=document.getElementById('nf-c').value.trim();
+  if(!t||!q||!a){toast('error: tema, pregunta y respuesta son requeridos');return;}
+  const d=LS.g('cfc');d.push({tag:t,q,a,code:c||null});LS.s('cfc',d);
+  ['nf-t','nf-q','nf-a','nf-c'].forEach(id=>document.getElementById(id).value='');
+  refreshAdmin();toast('ficha guardada');
+}
+function saveQZ(){
+  const t=document.getElementById('nq-t').value.trim(),q=document.getElementById('nq-q').value.trim(),
+        c=document.getElementById('nq-c').value.trim(),
+        opts=['o0','o1','o2','o3'].map(id=>document.getElementById(id).value.trim()).filter(Boolean),
+        correct=parseInt(document.querySelector('input[name="cor"]:checked').value),
+        e=document.getElementById('nq-e').value.trim();
+  if(!t||!q||opts.length<2||!e){toast('error: completa todos los campos');return;}
+  const d=LS.g('cqz');d.push({tag:t,q,code:c||null,options:opts,correct,explanation:e});LS.s('cqz',d);
+  ['nq-t','nq-q','nq-c','o0','o1','o2','o3','nq-e'].forEach(id=>document.getElementById(id).value='');
+  document.querySelector('input[name="cor"][value="0"]').checked=true;
+  refreshAdmin();toast('pregunta guardada');
+}
+function saveCS(){
+  const s=document.getElementById('nc-s').value.trim(),t=document.getElementById('nc-t').value.trim(),
+        c=document.getElementById('nc-c').value.trim();
+  if(!s||!t||!c){toast('error: todos los campos son requeridos');return;}
+  const d=LS.g('ccs');d.push({sec:s,title:t,code:c});LS.s('ccs',d);
+  ['nc-s','nc-t','nc-c'].forEach(id=>document.getElementById(id).value='');
+  refreshAdmin();toast('referencia guardada');
+}
+function delFC(i){const d=LS.g('cfc');d.splice(i,1);LS.s('cfc',d);refreshAdmin();toast('ficha eliminada');}
+function delQZ(i){const d=LS.g('cqz');d.splice(i,1);LS.s('cqz',d);refreshAdmin();toast('pregunta eliminada');}
+function delCS(i){const d=LS.g('ccs');d.splice(i,1);LS.s('ccs',d);refreshAdmin();toast('referencia eliminada');}
+function refreshAdmin(){
+  const fcs=LS.g('cfc'),qzs=LS.g('cqz'),css=LS.g('ccs');
+  document.getElementById('cnt-fc').textContent=fcs.length;
+  document.getElementById('cnt-qz').textContent=qzs.length;
+  document.getElementById('cnt-cs').textContent=css.length;
+  document.getElementById('list-fc').innerHTML=fcs.length===0?'<div class="empty-msg">no hay fichas personalizadas todavía</div>'
+    :fcs.map((f,i)=>`<div class="c-item"><div class="c-item-body"><span class="c-item-tag">${esc(f.tag)}</span><div style="margin-top:3px">${esc(f.q)}</div></div><button class="btn btn-red-out btn-sm" onclick="delFC(${i})">rm</button></div>`).join('');
+  document.getElementById('list-qz').innerHTML=qzs.length===0?'<div class="empty-msg">no hay preguntas personalizadas todavía</div>'
+    :qzs.map((q,i)=>`<div class="c-item"><div class="c-item-body"><span class="c-item-tag">${esc(q.tag)}</span><div style="margin-top:3px">${esc(q.q)}</div></div><button class="btn btn-red-out btn-sm" onclick="delQZ(${i})">rm</button></div>`).join('');
+  document.getElementById('list-cs').innerHTML=css.length===0?'<div class="empty-msg">no hay referencias personalizadas todavía</div>'
+    :css.map((c,i)=>`<div class="c-item"><div class="c-item-body"><span class="c-item-tag">${esc(c.sec)}</span><div style="margin-top:3px">${esc(c.title)}</div></div><button class="btn btn-red-out btn-sm" onclick="delCS(${i})">rm</button></div>`).join('');
+  updateStats();
+}
+
+// ═══ INIT ═══
+updateStats();
+initFC();
+</script>
+</body>
+</html>
